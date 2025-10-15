@@ -1,0 +1,281 @@
+﻿@model DoAnCoSo.Models.ViewModels.PostIndexViewModel
+
+@{
+    ViewData["Title"] = "Bảng tin";
+
+    var posts = Model.Posts;
+    var relevantIds = Model.RelevantPostIds ?? new HashSet<int>();
+    var currentUserId = Model.CurrentUserId;
+    var mutualFriends = Model.MutualFriends ?? new List<ApplicationUser>();
+}
+
+<div class="container-fluid mt-4">
+    <div class="banner" style="background-image: url(./images/banner-bg.png);">
+        <img src="./images/newsfeed-icon.png" alt="" class="banner-icon">
+        <div class="banner-info">
+            <p class="banner-info__newsfeed">Newsfeed</p>
+            <p class="banner-info__check">Check what your friends have been up to!</p>
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col-md-3 bg-light p-3">
+            <h5 class="mb-4">📋 Menu</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-tv"></i> Bảng tin</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("MyFriends", "Profile")">
+                        <i class="fas fa-user-friends"></i> Bạn bè
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">📝 Đăng bài viết mới</h5>
+                    <form asp-action="Index" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <textarea asp-for="NewPost.Content" class="form-control" rows="3" placeholder="Bạn đang nghĩ gì?"></textarea>
+                            <span asp-validation-for="NewPost.Content" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <input type="file" name="imageFile" class="form-control" />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Đăng</button>
+                    </form>
+                </div>
+            </div>
+
+            @if (posts != null && posts.Any())
+            {
+                foreach (var post in posts)
+                {
+                    bool isRelated = relevantIds.Contains(post.Id);
+                    <div class="widget-box media border rounded p-3 mb-4 shadow-sm">
+                        <div class="widget-box-status">
+                            <div class="user-status d-flex align-items-center">
+                                <div class="user-status__avatar me-3">
+                                    <img src="@(string.IsNullOrEmpty(post.User?.Image) ? "/images/default-avatar.png" : post.User.Image)"
+                                         alt="User Avatar" class="rounded-circle" width="50" height="50">
+                                </div>
+                                <div class="user-status__info">
+                                    <span class="user-status__info-name fw-bold">
+                                        <a href="@Url.Action("ProfileDetail", "Profile", new { id = post.User?.Id })">
+                                            @post.User?.FullName
+                                        </a> đã đăng bài
+                                    </span>
+                                    <p class="user-status__info-time text-muted mb-0">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                                </div>
+                            </div>
+
+                            <p class="user-status-text mt-3">@post.Content</p>
+
+                            @if (!string.IsNullOrEmpty(post.ImagePath))
+                            {
+                                <img src="@post.ImagePath" alt="Post image" class="img-fluid rounded mt-2" />
+                            }
+                        </div>
+
+                        <div class="content-actions d-flex gap-3 border-top pt-2 mt-2">
+                            <div class="content-action text-primary" role="button">
+                                <i class="far fa-thumbs-up"></i> <span>Thích</span>
+                            </div>
+
+                            <div class="content-action content-action__comment text-primary" data-post-id="@post.Id" role="button">
+                                <i class="far fa-comment-alt"></i> <span>Bình luận</span>
+                            </div>
+
+                            <div class="content-action text-primary" role="button">
+                                <i class="fas fa-share"></i> <span>Chia sẻ</span>
+                            </div>
+                        </div>
+
+                        @if (post.Comments != null && post.Comments.Any(c => c.ParentCommentId == null))
+                        {
+                            @foreach (var cmt in post.Comments.Where(c => c.ParentCommentId == null))
+                            {
+                                <div class="comment-item mb-2">
+                                    <strong>@cmt.User?.UserName</strong>: @cmt.Content
+                                    <div class="text-muted small">@cmt.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+
+                                    @foreach (var rep in post.Comments.Where(r => r.ParentCommentId == cmt.Id))
+                                    {
+                                        <div class="reply-item ms-4 mt-1 border-start ps-2">
+                                            <strong>@rep.User?.UserName</strong>: @rep.Content
+                                            <div class="text-muted small">@rep.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                        </div>
+                                    }
+
+                                    <form asp-controller="Post" asp-action="AddComment" method="post" class="mt-1 ms-4">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="PostId" value="@post.Id" />
+                                        <input type="hidden" name="ParentCommentId" value="@cmt.Id" />
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" name="Content" class="form-control" placeholder="Trả lời..." required />
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm">Gửi</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-muted">Chưa có bình luận nào.</div>
+                        }
+
+                        <form asp-controller="Post" asp-action="AddComment" method="post" class="mt-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="PostId" value="@post.Id" />
+                            <div class="input-group">
+                                <input type="text" name="Content" class="form-control" placeholder="Viết bình luận..." required />
+                                <button type="submit" class="btn btn-outline-primary">Gửi</button>
+                            </div>
+                        </form>
+                    </div>
+                }
+            }
+
+            else
+            {
+                <p class="text-muted">Chưa có bài viết nào.</p>
+            }
+        </div>
+
+        <div class="col-md-3">
+            <div class="mt-4">
+                <h6 class="text-primary">👥 Gợi ý bạn bè</h6>
+                <div id="suggested-container"></div>
+            </div>
+        </div>
+        
+        <div id="chat-box" class="position-fixed bottom-0 end-0 bg-white border rounded shadow-lg d-none"
+             style="width: 300px; height: 400px;">
+            <div class="d-flex justify-content-between align-items-center p-2 border-bottom bg-primary text-white">
+                <span id="chat-friend-name"></span>
+                <button id="close-chat" class="btn btn-sm btn-light">✖</button>
+            </div>
+            <div id="chat-messages" class="p-2 overflow-auto" style="height: 300px;">
+            </div>
+            <div class="p-2 border-top">
+                <input type="text" id="chat-input" class="form-control" placeholder="Nhập tin nhắn...">
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let socket = null;
+        let currentFriendId = null;
+        const currentUserId = "@Model.CurrentUserId"; 
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const friends = document.querySelectorAll("#friends-container .user");
+            const chatBox = document.getElementById("chat-box");
+            const chatFriendName = document.getElementById("chat-friend-name");
+            const closeChat = document.getElementById("close-chat");
+            const chatMessages = document.getElementById("chat-messages");
+            const chatInput = document.getElementById("chat-input");
+            socket = new WebSocket(`wss://${window.location.host}/ws?userId=${currentUserId}`);
+
+            socket.onopen = () => console.log("✅ WebSocket đã kết nối");
+            socket.onclose = () => console.log("❌ WebSocket đã đóng");
+            socket.onerror = (err) => console.error("⚠️ WebSocket lỗi:", err);
+            socket.onmessage = (event) => {
+                try {
+                    const payload = JSON.parse(event.data);
+                    if (payload.fromId === currentFriendId) {
+                        appendMessage(payload.message, "text-start");
+                    }
+                } catch {
+                    appendMessage("💬 " + event.data, "text-start");
+                }
+            };
+
+            friends.forEach(friend => {
+                friend.addEventListener("click", function () {
+                    currentFriendId = this.dataset.userid;
+                    let fullName = this.querySelector("a").innerText;
+
+                    chatFriendName.textContent = fullName;
+                    chatBox.classList.remove("d-none");
+                    chatBox.dataset.userid = currentFriendId;
+
+                    chatMessages.innerHTML = "";
+                });
+            });
+
+            closeChat.addEventListener("click", function () {
+                chatBox.classList.add("d-none");
+                currentFriendId = null;
+                chatMessages.innerHTML = "";
+            });
+            chatInput.addEventListener("keydown", function (e) {
+                if (e.key === "Enter" && chatInput.value.trim() !== "") {
+                    e.preventDefault();
+                    const msg = chatInput.value.trim();
+
+                    if (socket && socket.readyState === WebSocket.OPEN) {
+                        socket.send(JSON.stringify({
+                            toId: currentFriendId,
+                            message: msg
+                        }));
+
+                        appendMessage("Bạn: " + msg, "text-end text-primary");
+                    } else {
+                        appendMessage("⚠️ Socket chưa kết nối", "text-center text-danger");
+                    }
+                    chatInput.value = "";
+                }
+            });
+
+            function appendMessage(text, alignClass) {
+                const div = document.createElement("div");
+                div.className = `mb-1 ${alignClass}`;
+                div.textContent = text;
+                chatMessages.appendChild(div);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+    </script>
+
+
+    <script>
+        document.addEventListener("click", function (e) {
+            const target = e.target.closest(".content-action__comment");
+            if (target) {
+                const postId = target.dataset.postId;
+                const section = document.getElementById(`comment-section-${postId}`);
+                const isVisible = section.style.display === "block";
+                section.style.display = isVisible ? "none" : "block";
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("/Post/GetSuggestedFriends")
+                .then(res => res.json())
+                .then(users => {
+                    const container = document.getElementById("suggested-container");
+                    container.innerHTML = "";
+                    users.forEach(user => {
+                        const div = document.createElement("div");
+                        div.className = "user d-flex align-items-center mb-2";
+                        div.dataset.userid = user.id;
+                        div.innerHTML = `
+                                    <img src="${user.image}" class="user-info__img-1 me-2">
+                                    <div>
+                                        <div class="fw-bold">
+                                            <a href="/Profile/ProfileDetail/${user.id}" class="text-decoration-none">${user.fullName}</a>
+                                        </div>
+                                        <div class="text-muted small">${user.userName}</div>
+                                    </div>
+                                `;
+                        container.appendChild(div);
+                    });
+                });
+        });
+    </script>
+}

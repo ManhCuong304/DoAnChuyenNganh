@@ -1,0 +1,22 @@
+# ========== Visual Studio ==========
+.vs/
+*.user
+*.suo
+*.cache
+
+# ========== Build ==========
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.v2
+*.vsidx
+*.json
+*.bin
+
+# ========== Others ==========
+*.dbmdl
+*.log
+*.tmp
+*.ide

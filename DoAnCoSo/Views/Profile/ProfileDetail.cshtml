@@ -1,0 +1,359 @@
+﻿<style>
+
+    .profile-container {
+        max-width: 935px;
+        margin: 100px auto;
+        padding: 0 20px;
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 44px;
+    }
+
+    .profile-avatar {
+        flex: 0 0 180px;
+        margin-right: 40px;
+        position: relative;
+    }
+
+        .profile-avatar img {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+            .profile-avatar img:hover {
+                transform: scale(1.05);
+            }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .username {
+        font-size: 32px;
+        font-weight: 300;
+        margin-bottom: 20px;
+        color: #262626;
+    }
+
+    .stats {
+        display: flex;
+        gap: 40px;
+        margin-bottom: 20px;
+    }
+
+        .stats div {
+            font-size: 16px;
+            color: #8e8e8e;
+        }
+
+            .stats div span {
+                font-weight: 600;
+                color: #262626;
+            }
+
+    .bio {
+        font-size: 16px;
+        line-height: 24px;
+        margin-bottom: 20px;
+        color: #262626;
+    }
+
+    .edit-profile-btn {
+        background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+    }
+
+        .edit-profile-btn:hover {
+            opacity: 0.9;
+        }
+
+    .highlights {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .highlight {
+        text-align: center;
+    }
+
+        .highlight img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            object-fit: cover;
+            margin-bottom: 5px;
+            transition: transform 0.3s ease;
+        }
+
+            .highlight img:hover {
+                transform: scale(1.1);
+            }
+
+        .highlight span {
+            font-size: 12px;
+            color: #8e8e8e;
+        }
+
+    .tabs {
+        display: flex;
+        justify-content: center;
+        gap: 60px;
+        border-bottom: 1px solid #dbdbdb;
+        margin-bottom: 20px;
+    }
+
+    .tab {
+        padding: 10px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #8e8e8e;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+        .tab.active {
+            color: #262626;
+            border-bottom: 2px solid #262626;
+        }
+
+    .posts-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .post img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .post img:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+    .username-section {
+        cursor: pointer;
+    }
+
+    .modal-content {
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .modal-header {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .modal-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #262626;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .modal-footer {
+        border-top: none;
+        padding-top: 0;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #dbdbdb;
+        font-size: 14px;
+    }
+
+        .form-control:focus {
+            border-color: #0095f6;
+            box-shadow: 0 0 0 0.2rem rgba(0, 149, 246, 0.25);
+        }
+
+    .btn-save {
+        background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-weight: 600;
+    }
+
+        .btn-save:hover {
+            opacity: 0.9;
+        }
+
+    .btn-cancel {
+        background: #fff;
+        color: #262626;
+        border: 1px solid #dbdbdb;
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-weight: 600;
+    }
+
+        .btn-cancel:hover {
+            background: #fafafa;
+        }
+</style>
+
+
+<div class="profile-container">
+
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <img src="@Url.Content(Model.Image ?? "/img/default-avatar.png")" alt="Profile Picture">
+        </div>
+        <div class="profile-info">
+            <div class="d-flex align-items-center mb-3 username-section" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <h1 class="username me-3">@Model.UserName</h1>
+                <img src="https://cdn-icons-png.flaticon.com/128/9308/9308015.png" width="30" height="30" alt="Edit Icon">
+            </div>
+            <div class="stats">
+                <div><span>18</span> posts</div>
+                <div><span>@ViewBag.Follower</span> followers</div>
+                <div><span>@ViewBag.Following</span> following</div>
+            </div>
+            <div class="bio">
+                <strong>@(Model.FullName ?? "Chưa có thông tin")</strong><br>
+                @(string.IsNullOrWhiteSpace(Model.Description) ? "Chưa có thông tin" : Model.Description)<br>
+                @if (!string.IsNullOrWhiteSpace(Model.Major))
+                {
+                    <div>📚 Chuyên ngành: @Model.Major</div>
+                }
+                @if (Model.BirthDate != null)
+                {
+                    <div>🎂 Ngày sinh: @Model.BirthDate?.ToString("dd/MM/yyyy")</div>
+                }
+
+                <a href="mailto:@Model.Email" style="color: #0095f6;">@Model.Email</a>
+                @if (!string.IsNullOrWhiteSpace(Model.Describe))
+                {
+                    <div>📘 Mô tả: @Model.Describe</div>
+                }
+                
+            </div>
+
+
+            <div>
+                @if (User.Identity.IsAuthenticated && User.Identity.Name != Model.UserName)
+                {
+                    if (ViewBag.IsMutualFollow == true)
+                    {
+                        <button class="btn btn-outline-danger me-2">Message</button>
+                    }
+
+                    if (ViewBag.IsFollowing == true)
+                    {
+                        <button onclick="HandleFollowing('@Model.Id')" id="followBtn" class="btn btn-outline-danger">Unfollow</button>
+                    }
+                    else
+                    {
+                        <button onclick="HandleFollowing('@Model.Id')" id="followBtn" class="btn btn-outline-primary">Follow</button>
+                    }
+                }
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <div class="tabs">
+        <div class="tab active" data-tab="posts"><i class="fa fa-th me-1"></i> Posts</div>
+        <div class="tab" data-tab="followers"><i class="fa fa-user-friends me-1"></i> Followers</div>
+        <div class="tab" data-tab="following"><i class="fa fa-user-plus me-1"></i> Following</div>
+    </div>
+
+    <div class="posts-grid" id="posts">
+        <div class="post"><img src="https://via.placeholder.com/300" alt="Post"></div>
+        <div class="post"><img src="https://via.placeholder.com/300" alt="Post"></div>
+        <div class="post"><img src="https://via.placeholder.com/300" alt="Post"></div>
+        <div class="post"><img src="https://via.placeholder.com/300" alt="Post"></div>
+        <div class="post"><img src="https://via.placeholder.com/300" alt="Post"></div>
+        <div class="post"><img src="https://via.placeholder.com/300" alt="Post"></div>
+    </div>
+    <div class="d-none" id="followers">Followers content (TBD)</div>
+    <div class="d-none" id="following">Following content (TBD)</div>
+</div>
+
+
+<script>
+
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll('#posts, #followers, #following').forEach(section => section.classList.add('d-none'));
+            document.getElementById(tab.dataset.tab).classList.remove('d-none');
+        });
+    });
+
+
+
+    
+    function saveProfile() {
+        const username = document.getElementById('username').value;
+        const fullname = document.getElementById('fullname').value;
+        const profileImage = document.getElementById('profileImage').value;
+        const description = document.getElementById('description').value;
+
+        console.log('Saving profile:', { username, fullname, profileImage, description });
+
+        document.querySelector('.username').textContent = username;
+        document.querySelector('.profile-avatar img').src = profileImage;
+        document.querySelector('.bio').innerHTML = `<strong>${fullname}</strong><br>${description}<br><a href="https://example.com" target="_blank" style="color: #0095f6;">example.com</a>`;
+
+        bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+    }
+
+
+        const HandleFollowing = (id) => {
+        fetch(`/Profile/Follow/${id}`, {
+            method: "POST"
+        })
+        .then(res => res.json())
+        .then(data => {
+            const btn = document.getElementById('followBtn');
+            if (btn.textContent === "Follow") {
+                btn.textContent = "Unfollow";
+                btn.classList.remove("btn-outline-primary");
+                btn.classList.add("btn-outline-danger");
+                window.location.reload();
+
+            } else {
+                btn.textContent = "Follow";
+                btn.classList.remove("btn-outline-danger");
+                btn.classList.add("btn-outline-primary");
+                window.location.reload();
+            }
+        })
+        .catch(err => console.log("Thất Bại", err));
+    }
+
+</script>
