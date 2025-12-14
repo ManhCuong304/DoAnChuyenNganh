@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+
+*.dll
+*.exe
+
+wwwroot/uploads/
+wwwroot/images/
+
+*.log

@@ -1,0 +1,283 @@
+﻿@model DoAnCoSo.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = Model.FullName;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var userPosts = ViewBag.UserPosts as List<DoAnCoSo.Models.Post>;
+    bool isMe = ViewBag.IsMe ?? false;
+    bool isFollowing = ViewBag.IsFollowing ?? false;
+}
+
+<style>
+    /* CSS Header Profile (Giữ nguyên) */
+    .profile-header {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 30px;
+        background: #fff;
+        border-radius: 20px;
+    }
+
+    .profile-avatar {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #fff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+
+    .profile-name {
+        font-weight: 300;
+        font-size: 2rem;
+        color: #333;
+    }
+
+    .stats-item {
+        margin-right: 30px;
+        font-size: 1.1rem;
+        color: #555;
+    }
+
+        .stats-item strong {
+            color: #000;
+            font-weight: 700;
+        }
+
+    /* CSS Card Bài viết */
+    .post-card {
+        border: none;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        transition: transform 0.3s;
+    }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+    .post-img-top {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .post-body {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .post-date {
+        font-size: 0.8rem;
+        color: #999;
+        font-weight: 500;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    /* --- CSS CHO PHẦN TEXT & XEM THÊM --- */
+    .post-text {
+        font-size: 0.95rem;
+        color: #444;
+        line-height: 1.6;
+        margin-bottom: 10px;
+        white-space: pre-line; /* Giữ xuống dòng */
+    }
+
+    .btn-see-more {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #0d6efd;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 5px;
+    }
+
+        .btn-see-more:hover {
+            text-decoration: underline;
+            color: #0a58ca;
+        }
+
+    .post-footer {
+        padding: 12px 20px;
+        background-color: #fcfcfc;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        color: #666;
+    }
+
+    .no-image-header {
+        height: 6px;
+        background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);
+        width: 100%;
+    }
+</style>
+
+<div class="container">
+    <div class="profile-header d-flex flex-column flex-md-row align-items-center">
+        <div class="flex-shrink-0 mb-3 mb-md-0 me-md-5">
+            <img src="@(Model.Image ?? "/images/default-avatar.png")" class="profile-avatar" alt="Avatar">
+        </div>
+        <div class="flex-grow-1 text-center text-md-start">
+            <div class="d-flex align-items-center justify-content-center justify-content-md-start mb-3 flex-wrap gap-2">
+                <h2 class="profile-name mb-0 me-3">@Model.UserName</h2>
+                @if (isMe)
+                {
+                    <a href="@Url.Action("Index", "Profile")" class="btn btn-outline-secondary btn-sm fw-bold rounded-pill px-3">Chỉnh sửa</a>
+                }
+                else
+                {
+                    <button id="btnFollow" onclick="toggleFollow('@Model.Id')" class="btn btn-sm fw-bold px-4 rounded-pill @(isFollowing ? "btn-secondary" : "btn-primary")">@(isFollowing ? "Đang theo dõi" : "Theo dõi")</button>
+                    <button class="btn btn-outline-dark btn-sm fw-bold px-3 rounded-pill">Nhắn tin</button>
+                }
+            </div>
+            <div class="mb-4">
+                <span class="stats-item"><strong>@(userPosts?.Count ?? 0)</strong> bài viết</span>
+                <span class="stats-item"><strong id="followerCount">@ViewBag.Follower</strong> người theo dõi</span>
+                <span class="stats-item"><strong>@ViewBag.Following</strong> đang theo dõi</span>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-1">@Model.FullName</h5>
+                <p class="mb-0 text-muted" style="white-space: pre-line;">@Model.Description</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="container my-4" style="max-width: 900px; opacity: 0.1;">
+
+<div class="container pb-5" style="max-width: 950px;">
+    @if (userPosts != null && userPosts.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var post in userPosts)
+            {
+                <div class="col">
+                    <div class="post-card h-100">
+                        @if (!string.IsNullOrEmpty(post.ImagePath))
+                        {
+                            <a href="@Url.Action("Detail", "Post", new { id = post.Id })">
+                                <img src="@post.ImagePath" class="post-img-top" alt="Post Image">
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="no-image-header"></div>
+                        }
+
+                        <div class="post-body">
+                            <span class="post-date">@post.CreatedAt.ToString("d 'thg' M, yyyy")</span>
+
+                            <div class="post-text">
+                                @{
+                                    var content = post.Content ?? "";
+                                    var limit = 200; // Giới hạn ký tự
+                                    bool isLong = content.Length > limit;
+                                }
+
+                                @if (isLong)
+                                {
+                                    <span id="short-content-@post.Id">
+                                        @content.Substring(0, limit)...
+                                    </span>
+
+                                    <span id="full-content-@post.Id" style="display: none;">
+                                        @content
+                                    </span>
+
+                                    <br>
+                                    <span class="btn-see-more" onclick="toggleSeeMore('@post.Id', this)">Xem thêm</span>
+                                }
+                                else
+                                {
+                                    // Nếu ngắn thì hiện hết luôn
+                                    <span>@content</span>
+                                    if (string.IsNullOrEmpty(content))
+                                    {
+                                        <em class="text-muted opacity-50">Không có nội dung.</em>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <div class="post-footer">
+                            <div><i class="bi bi-heart me-1"></i> Like</div>
+                            <a href="@Url.Action("Detail", "Post", new { id = post.Id })" class="text-decoration-none small text-muted">Chi tiết <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5"><h5 class="fw-bold text-muted">Chưa có bài viết nào</h5></div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () { reloadSidebarFriends(); });
+
+        // --- HÀM XỬ LÝ XEM THÊM / THU GỌN ---
+        function toggleSeeMore(postId, btn) {
+            var shortContent = document.getElementById('short-content-' + postId);
+            var fullContent = document.getElementById('full-content-' + postId);
+
+            if (fullContent.style.display === "none") {
+                // Đang đóng -> Mở ra
+                shortContent.style.display = "none";
+                fullContent.style.display = "inline";
+                btn.innerText = "Thu gọn";
+            } else {
+                // Đang mở -> Đóng lại
+                shortContent.style.display = "inline";
+                fullContent.style.display = "none";
+                btn.innerText = "Xem thêm";
+            }
+        }
+
+        // --- HÀM SIDEBAR & FOLLOW (GIỮ NGUYÊN) ---
+        function reloadSidebarFriends() {
+            var container = document.getElementById('friends-container');
+            if (!container) return;
+            fetch('/Profile/GetFriendsJson').then(r => r.json()).then(data => {
+                var html = '';
+                if (!data || data.length === 0) html = '<div class="text-muted small py-2 px-1">Chưa theo dõi ai.</div>';
+                else data.forEach(u => {
+                    var img = u.image ? u.image : '/images/default-avatar.png';
+                    html += `<a href="/Profile/ProfileDetail/${u.id}" class="contact-item user d-flex align-items-center text-decoration-none py-2 text-dark px-2 rounded hover-bg-light"><div class="position-relative me-3"><img src="${img}" class="rounded-circle shadow-sm" width="40" height="40" style="object-fit:cover;"><span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle" style="width:10px;height:10px;"></span></div><div class="fw-bold text-truncate" style="max-width:130px;font-size:0.9rem;">${u.fullName}</div></a>`;
+                });
+                container.innerHTML = html;
+            }).catch(e => console.error(e));
+        }
+
+        function toggleFollow(id) {
+            var btn = document.getElementById('btnFollow');
+            var cnt = document.getElementById('followerCount');
+            btn.style.opacity = "0.7"; btn.disabled = true;
+            fetch('/Profile/ToggleFollow?id=' + id, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+                .then(r => r.json()).then(d => {
+                    btn.style.opacity = "1";
+                    if (d.success) {
+                        if (d.isFollowing) { btn.className = "btn btn-secondary btn-sm fw-bold px-4 rounded-pill"; btn.innerText = 'Đang theo dõi'; }
+                        else { btn.className = "btn btn-primary btn-sm fw-bold px-4 rounded-pill"; btn.innerText = 'Theo dõi'; }
+                        if (cnt) cnt.innerText = d.newFollowerCount;
+                        reloadSidebarFriends();
+                    } else alert(d.message);
+                }).finally(() => btn.disabled = false);
+        }
+    </script>
+}

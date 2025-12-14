@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "DoAnCoSo": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:63396;http://localhost:63397"
+    }
+  }
+}

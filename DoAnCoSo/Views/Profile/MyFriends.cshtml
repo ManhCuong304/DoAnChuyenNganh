@@ -1,0 +1,106 @@
+﻿@model List<DoAnCoSo.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Bạn bè";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* CSS tùy chỉnh để làm đẹp giao diện */
+    .friend-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        background-color: #fff;
+    }
+
+        .friend-card:hover {
+            transform: translateY(-5px); /* Hiệu ứng bay lên nhẹ khi di chuột */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+
+    .friend-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #f8f9fa;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .friend-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #333;
+        text-decoration: none;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis; /* Cắt bớt nếu tên quá dài */
+    }
+
+        .friend-name:hover {
+            color: #0d6efd; /* Màu xanh khi hover tên */
+        }
+
+    .btn-profile {
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        padding: 6px 20px;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h3 class="fw-bold mb-0">
+            <i class="bi bi-people-fill text-primary me-2"></i>Danh sách bạn bè
+            <span class="text-muted fs-5 ms-2">(@(Model?.Count ?? 0))</span>
+        </h3>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var user in Model)
+            {
+                <div class="col">
+                    <div class="card friend-card shadow-sm h-100">
+                        <div class="card-body d-flex align-items-center p-3">
+                            <a href="@Url.Action("ProfileDetail", "Profile", new { id = user.Id })" class="flex-shrink-0">
+                                <img src="@(user.Image ?? "/images/default-avatar.png")" class="friend-avatar me-3" alt="@user.FullName" />
+                            </a>
+
+                            <div class="flex-grow-1 min-width-0">
+                                <a href="@Url.Action("ProfileDetail", "Profile", new { id = user.Id })" class="friend-name" title="@user.FullName">
+                                    @user.FullName
+                                </a>
+
+                                <p class="text-muted mb-2 small">@@@user.UserName</p>
+
+                                <a href="@Url.Action("ProfileDetail", "Profile", new { id = user.Id })"
+                                   class="btn btn-outline-primary btn-sm btn-profile w-100">
+                                    Xem trang cá nhân
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="mb-3">
+                <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="120" style="opacity: 0.5;">
+            </div>
+            <h5 class="text-muted fw-bold">Bạn chưa theo dõi ai cả</h5>
+            <p class="text-muted mb-4">Hãy tìm kiếm và kết nối với mọi người nhé!</p>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg rounded-pill px-5">
+                Khám phá ngay
+            </a>
+        </div>
+    }
+</div>

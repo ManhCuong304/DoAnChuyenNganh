@@ -1,0 +1,877 @@
+﻿@model DoAnCoSo.Models.ViewModels.PostIndexViewModel
+
+@{
+    ViewData["Title"] = "Bảng tin";
+    var posts = Model.Posts;
+    var relevantIds = Model.RelevantPostIds ?? new HashSet<int>();
+    var currentUserId = Model.CurrentUserId;
+    var mutualFriends = Model.MutualFriends ?? new List<ApplicationUser>();
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    /* ... (Giữ nguyên toàn bộ CSS của bạn, không thay đổi) ... */
+    :root {
+        --body-bg: #f0f2f5;
+        --card-bg: #ffffff;
+        --text-main: #050505;
+        --text-muted: #65676b;
+        --primary-color: #1877f2;
+        --radius-card: 12px;
+        --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background-color: var(--body-bg);
+        font-family: 'Inter', sans-serif;
+        color: var(--text-main);
+    }
+
+    .feed-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding-top: 20px;
+    }
+
+    .sidebar-sticky {
+        position: sticky;
+        top: 80px;
+        height: fit-content;
+    }
+
+    .nav-link-custom {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        color: var(--text-main);
+        font-weight: 500;
+        border-radius: 8px;
+        transition: background 0.2s;
+        text-decoration: none;
+        margin-bottom: 5px;
+    }
+
+        .nav-link-custom:hover {
+            background-color: #e4e6eb;
+            color: var(--text-main);
+        }
+
+        .nav-link-custom i {
+            font-size: 24px;
+            width: 36px;
+            color: var(--primary-color);
+            margin-right: 10px;
+            text-align: center;
+        }
+
+    .create-post-card {
+        background: var(--card-bg);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-card);
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .input-post-wrapper {
+        display: flex;
+        gap: 10px;
+        border-bottom: 1px solid #e4e6eb;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    .input-post-fake {
+        background: #f0f2f5;
+        border-radius: 20px;
+        padding: 10px 20px;
+        flex: 1;
+        cursor: pointer;
+        color: var(--text-muted);
+        border: none;
+        text-align: left;
+        transition: background 0.2s;
+    }
+
+        .input-post-fake:hover {
+            background: #e4e6eb;
+        }
+
+    .post-card {
+        background: var(--card-bg);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-card);
+        margin-bottom: 20px;
+        padding-bottom: 5px;
+    }
+
+    .post-header {
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .author-name {
+        font-weight: 600;
+        color: var(--text-main);
+        text-decoration: none;
+    }
+
+        .author-name:hover {
+            text-decoration: underline;
+        }
+
+    .post-time {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .post-content {
+        padding: 0 16px 10px 16px;
+    }
+
+    .post-image img {
+        width: 100%;
+        max-height: 600px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .post-actions {
+        display: flex;
+        border-top: 1px solid #e4e6eb;
+        border-bottom: 1px solid #e4e6eb;
+        margin: 0 16px;
+        padding: 4px 0;
+    }
+
+    .action-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+        .action-btn:hover {
+            background-color: #f2f2f2;
+        }
+
+        .action-btn i {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+
+    .comment-section {
+        padding: 10px 16px;
+        background-color: #fff;
+    }
+
+    .comment-bubble {
+        background-color: #f0f2f5;
+        border-radius: 18px;
+        padding: 8px 12px;
+        display: inline-block;
+        max-width: 90%;
+    }
+
+    .comment-input {
+        background: #f0f2f5;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 15px;
+        flex: 1;
+        outline: none;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+        color: var(--text-main);
+    }
+
+        .contact-item:hover {
+            background-color: #e4e6eb;
+        }
+
+    .avatar-sm {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .avatar-md {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    /* CSS RIÊNG CHO DROPDOWN ĐỂ KHÔNG BỊ LỖI GIAO DIỆN */
+    .dropdown-toggle::after {
+        display: none !important;
+    }
+    /* Ẩn mũi tên mặc định */
+    .dropdown-menu {
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 5px;
+    }
+
+    .dropdown-item {
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+        .dropdown-item:hover {
+            background-color: #f0f2f5;
+        }
+
+    .btn-options {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        border: none;
+        background: transparent;
+    }
+
+        .btn-options:hover {
+            background-color: #f0f2f5;
+        }
+
+    /* ... (CSS Chat box giữ nguyên) ... */
+    #chat-box {
+        width: 360px;
+        height: 480px;
+        background-color: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        font-family: 'Segoe UI', sans-serif;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 15px 20px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .chat-header .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.9);
+            object-fit: cover;
+        }
+
+    .btn-close-chat {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+        .btn-close-chat:hover {
+            background: rgba(255,255,255,0.4);
+            transform: rotate(90deg);
+        }
+
+    #chat-messages {
+        flex: 1;
+        padding: 20px;
+        background-color: #f4f7f6;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        scroll-behavior: smooth;
+    }
+
+    .message-row {
+        display: flex;
+        align-items: flex-end;
+        margin-bottom: 4px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message-bubble {
+        max-width: 75%;
+        padding: 10px 16px;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        position: relative;
+        word-wrap: break-word;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .message-received .message-bubble {
+        background-color: #ffffff;
+        color: #333;
+        border-radius: 18px 18px 18px 2px;
+        margin-left: 10px;
+    }
+
+    .message-avatar-small {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .message-sent {
+        justify-content: flex-end;
+    }
+
+        .message-sent .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 18px 18px 2px 18px;
+        }
+
+    .message-time {
+        display: block;
+        font-size: 0.65rem;
+        margin-top: 4px;
+        opacity: 0.7;
+        text-align: right;
+    }
+
+    .chat-footer {
+        padding: 15px;
+        background-color: white;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .chat-input-wrapper {
+        flex: 1;
+        background-color: #f0f2f5;
+        border-radius: 25px;
+        padding: 8px 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .chat-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+    }
+
+    .btn-send {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(118, 75, 162, 0.4);
+        transition: transform 0.2s;
+    }
+
+        .btn-send:hover {
+            transform: scale(1.1);
+        }
+</style>
+
+<div class="container-fluid feed-container">
+    <div class="row">
+
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="sidebar-sticky">
+                <a href="@Url.Action("Index", "Post")" class="nav-link-custom active"><i class="fas fa-home"></i> Bảng tin</a>
+                <a href="@Url.Action("index", "Profile", new { id = currentUserId })" class="nav-link-custom"><i class="fas fa-user-circle"></i> Trang cá nhân</a>
+                <a href="@Url.Action("MyFriends", "Profile")" class="nav-link-custom"><i class="fas fa-user-friends"></i> Bạn bè</a>
+                <hr>
+                <div class="p-3 text-muted small">© 2025 Social App</div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-md-12">
+            <div class="create-post-card">
+                <div class="input-post-wrapper">
+                    <img src="/images/default-avatar.png" class="avatar-md">
+                    <button class="input-post-fake" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        @User.Identity.Name ơi, bạn đang nghĩ gì thế?
+                    </button>
+                </div>
+            </div>
+
+            @if (posts != null && posts.Any())
+            {
+                foreach (var post in posts)
+                {
+                    bool isRecommended = relevantIds.Contains(post.Id);
+                    <div class="post-card">
+
+                        <div class="post-header">
+                            <div class="d-flex align-items-center">
+                                <a href="@Url.Action("ProfileDetail", "Profile", new { id = post.User?.Id })">
+                                    <img src="@(string.IsNullOrEmpty(post.User?.Image) ? "/images/default-avatar.png" : post.User.Image)" class="avatar-md me-2">
+                                </a>
+                                <div>
+                                    <a href="@Url.Action("ProfileDetail", "Profile", new { id = post.User?.Id })" class="author-name">@post.User?.FullName</a>
+                                    <div class="post-time">
+                                        @if (isRecommended)
+                                        {
+                                            <span class="badge bg-primary me-1" style="font-size:0.6rem;">Gợi ý</span>
+                                        }
+                                        @post.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="dropdown">
+                                <button class="btn-options" type="button" id="postMenu-@post.Id" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-h text-muted"></i>
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="postMenu-@post.Id">
+
+                                    @if (currentUserId == post.UserId)
+                                    {
+                                        <li>
+                                            <form asp-controller="Post" asp-action="Delete" method="post" class="m-0" onsubmit="return confirm('Bạn có chắc muốn xóa bài viết này?');">
+                                                <input type="hidden" name="id" value="@post.Id" />
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="fas fa-trash-alt me-2"></i> Xóa bài viết
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-flag me-2"></i> Báo cáo</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="post-content">
+                            <p class="mb-2">@post.Content</p>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(post.ImagePath))
+                        {
+                            <div class="post-image">
+                                <img src="@post.ImagePath" alt="Post Image">
+                            </div>
+                        }
+                        <button class="btn btn-sm btn-outline-primary summarize-btn mt-2"
+                                data-id="@post.Id">
+                            ✨ Tóm tắt bài viết
+                        </button>
+
+                        <div id="summary-@post.Id"
+                             class="alert alert-info mt-2"
+                             style="display:none">
+                        </div>
+
+                        @{
+                            bool isLiked = Model.LikedPostIds.Contains(post.Id);
+                        }
+                        <div class="post-actions">
+                            <div class="action-btn btn-like" data-post-id="@post.Id">
+                                <i id="like-icon-@post.Id" class="@(isLiked ? "fas fa-thumbs-up text-primary" : "far fa-thumbs-up")"></i>
+                                <span id="like-text-@post.Id">
+                                    @(isLiked ? "Bỏ thích" : "Thích")
+                                </span>
+                            </div>
+
+                            <div class="action-btn content-action__comment" data-post-id="@post.Id">
+                                <i class="far fa-comment"></i> Bình luận
+                            </div>
+                        </div>
+
+                        <div class="px-3 py-2 text-muted small">
+                            <span>
+                                <i class="fas fa-thumbs-up text-primary"></i>
+                                <span id="like-count-@post.Id">@post.LikeCount</span>
+                            </span>
+                            •
+                            <span>@post.Comments?.Count bình luận</span>
+                        </div>
+
+
+                        <div class="comment-section" id="comment-section-@post.Id" style="display: none;">
+                            @if (post.Comments != null)
+                            {
+                                foreach (var cmt in post.Comments.Where(c => c.ParentCommentId == null))
+                                {
+                                    <div class="d-flex mb-2">
+                                        <img src="@(string.IsNullOrEmpty(cmt.User?.Image) ? "/images/default-avatar.png" : cmt.User.Image)" class="avatar-sm me-2">
+                                        <div>
+                                            <div class="comment-bubble">
+                                                <a href="#" class="fw-bold text-decoration-none text-dark">@cmt.User?.UserName</a>
+                                                <span class="ms-1">@cmt.Content</span>
+                                            </div>
+                                            <div class="small text-muted ms-2 mt-1">@cmt.CreatedAt.ToString("HH:mm")</div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            <form asp-controller="Post" asp-action="AddComment" method="post" class="d-flex gap-2 mt-2 align-items-center">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="PostId" value="@post.Id" />
+                                <img src="/images/default-avatar.png" class="avatar-sm">
+                                <input type="text" name="Content" class="comment-input" placeholder="Viết bình luận..." required>
+                                <button type="submit" class="btn btn-link p-0 text-primary"><i class="fas fa-paper-plane"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted"><h5>Chưa có bài viết nào</h5></div>
+            }
+        </div>
+
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="sidebar-sticky">
+                <div class="mb-4">
+                    <h6 class="text-muted fw-bold mb-3">Gợi ý cho bạn</h6>
+                    <div id="suggested-container"><small>Đang tải...</small></div>
+                </div>
+                <hr>
+                <div>
+                    <h6 class="text-muted fw-bold mb-3">Người liên hệ</h6>
+                    <div id="friends-container">
+                        @foreach (var friend in mutualFriends)
+                        {
+                            <div class="contact-item user" data-userid="@friend.Id">
+                                <div class="position-relative me-3">
+                                    <img src="@(string.IsNullOrEmpty(friend.Image) ? "/images/default-avatar.png" : friend.Image)" class="avatar-sm">
+                                </div>
+                                <div class="fw-500 text-dark">@friend.FullName</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="createPostModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0"><h5 class="modal-title w-100 text-center fw-bold">Tạo bài viết</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <form asp-action="Index" method="post" enctype="multipart/form-data">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="/images/default-avatar.png" class="avatar-sm me-2"><span class="fw-bold">@User.Identity.Name</span>
+                    </div>
+                    <textarea asp-for="NewPost.Content" class="form-control border-0 fs-5" rows="4" placeholder="Bạn đang nghĩ gì thế?"></textarea>
+                    <div class="border rounded p-3 mt-3 d-flex justify-content-between align-items-center">
+                        <span class="fw-500">Thêm vào bài viết</span>
+                        <div>
+                            <label class="text-success" style="cursor:pointer"><i class="fas fa-images fa-lg"></i><input type="file" name="imageFile" class="d-none"></label>
+                            <span class="text-primary mx-2"><i class="fas fa-user-tag fa-lg"></i></span>
+                            <span class="text-warning"><i class="far fa-smile fa-lg"></i></span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mt-3 fw-bold">Đăng</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="chat-box" class="d-none">
+    <div class="chat-header">
+        <div class="d-flex align-items-center gap-2">
+            <img id="chat-header-avatar" src="/images/default-avatar.png" class="user-avatar">
+            <div>
+                <div id="chat-friend-name" class="fw-bold">Friend Name</div>
+                <div style="font-size: 0.75rem; opacity: 0.9;">● Online</div>
+            </div>
+        </div>
+        <button id="close-chat" class="btn-close-chat"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="chat-messages"></div>
+    <div class="chat-footer">
+        <div class="chat-input-wrapper">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Nhập tin nhắn..." autocomplete="off">
+        </div>
+        <button id="btn-send-msg" class="btn-send"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const currentUserId = "@Model.CurrentUserId";
+        let currentFriendAvatar = "/images/default-avatar.png";
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // 1. Load Gợi ý kết bạn
+            fetch("/Post/GetSuggestedFriends")
+                .then(res => res.json())
+                .then(users => {
+                    const container = document.getElementById("suggested-container");
+                    container.innerHTML = "";
+                    if (!users.length) { container.innerHTML = "<small class='text-muted'>Không có gợi ý mới.</small>"; return; }
+                    users.forEach(user => {
+                        const div = document.createElement("div");
+                        div.className = "d-flex align-items-center mb-2 justify-content-between";
+                        div.innerHTML = `
+                                     <div class="d-flex align-items-center">
+                                        <img src="${user.image || '/images/default-avatar.png'}" class="avatar-sm me-2">
+                                        <a href="/Profile/ProfileDetail/${user.id}" class="text-dark fw-bold text-decoration-none" style="font-size:0.9rem">${user.fullName}</a>
+                                     </div>
+                                     <button class="btn btn-sm btn-outline-primary rounded-circle"><i class="fas fa-user-plus"></i></button>`;
+                        container.appendChild(div);
+                    });
+                });
+
+            // 2. Toggle Comment
+            document.querySelectorAll(".content-action__comment").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    const postId = this.dataset.postId;
+                    const section = document.getElementById(`comment-section-${postId}`);
+                    section.style.display = section.style.display === "block" ? "none" : "block";
+                });
+            });
+
+            // 3. Khởi tạo Chat
+            initChat();
+        });
+
+        // ... (Phần Script Chat logic giữ nguyên) ...
+        // ... (Phần Script Summarize giữ nguyên) ...
+
+        // Code Chat Logic đầy đủ như cũ
+        function initChat() {
+            let socket = null;
+            let currentFriendId = null;
+
+            const chatBox = document.getElementById("chat-box");
+            const chatFriendName = document.getElementById("chat-friend-name");
+            const chatHeaderAvatar = document.getElementById("chat-header-avatar");
+            const chatMessages = document.getElementById("chat-messages");
+            const chatInput = document.getElementById("chat-input");
+            const closeChat = document.getElementById("close-chat");
+            const btnSend = document.getElementById("btn-send-msg");
+
+            const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+            const socketUrl = `${protocol}${window.location.host}/ws?userId=${currentUserId}`;
+            socket = new WebSocket(socketUrl);
+
+            socket.onopen = () => console.log("✅ Socket Connected");
+            socket.onmessage = (event) => {
+                const payload = JSON.parse(event.data);
+                if (payload.fromId === currentFriendId) {
+                    appendMessage(payload.message, false);
+                }
+            };
+
+            document.querySelectorAll("#friends-container .user").forEach(friend => {
+                friend.addEventListener("click", function () {
+                    currentFriendId = this.dataset.userid;
+                    const fullName = this.querySelector(".fw-500").innerText;
+                    const imgTag = this.querySelector("img");
+                    currentFriendAvatar = imgTag ? imgTag.src : "/images/default-avatar.png";
+
+                    chatFriendName.textContent = fullName;
+                    chatHeaderAvatar.src = currentFriendAvatar;
+                    chatBox.classList.remove("d-none");
+
+                    loadChatHistory(currentFriendId);
+                });
+            });
+
+            function handleSend() {
+                if (chatInput.value.trim() !== "") {
+                    sendMessage(chatInput.value.trim());
+                    chatInput.value = "";
+                }
+            }
+            chatInput.addEventListener("keydown", (e) => { if (e.key === "Enter") handleSend(); });
+            btnSend.addEventListener("click", handleSend);
+
+            closeChat.addEventListener("click", () => { chatBox.classList.add("d-none"); currentFriendId = null; });
+
+            function loadChatHistory(friendId) {
+                chatMessages.innerHTML = '<div class="text-center text-muted small mt-2">Đang tải...</div>';
+                fetch(`/Post/GetChatHistory?friendId=${friendId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        chatMessages.innerHTML = "";
+                        data.forEach(msg => {
+                            const isMe = msg.fromId === currentUserId;
+                            appendMessage(msg.content, isMe, msg.time);
+                        });
+                        scrollToBottom();
+                    });
+            }
+
+            function sendMessage(content) {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ toId: currentFriendId, message: content }));
+                    appendMessage(content, true);
+                } else {
+                    alert("Mất kết nối chat!");
+                }
+            }
+
+            function appendMessage(text, isMe, time = "Vừa xong") {
+                const divRow = document.createElement("div");
+                divRow.className = isMe ? "message-row message-sent" : "message-row message-received";
+
+                let htmlContent = "";
+                if (isMe) {
+                    htmlContent = `
+                                <div class="message-bubble">
+                                    ${text}
+                                    <span class="message-time text-white-50">${time}</span>
+                                </div>`;
+                } else {
+                    htmlContent = `
+                                <img src="${currentFriendAvatar}" class="message-avatar-small">
+                                <div class="message-bubble">
+                                    ${text}
+                                    <span class="message-time">${time}</span>
+                                </div>`;
+                }
+                divRow.innerHTML = htmlContent;
+                chatMessages.appendChild(divRow);
+                scrollToBottom();
+            }
+
+            function scrollToBottom() {
+                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            }
+        }
+
+        document.querySelectorAll(".summarize-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const postId = this.dataset.id;
+                const box = document.getElementById("summary-" + postId);
+
+                if (!box) { console.error(`Không tìm thấy ô hiển thị tóm tắt cho PostId: ${postId}`); return; }
+
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang tóm tắt...';
+                btn.disabled = true;
+
+                box.classList.remove('alert-danger');
+                box.classList.add('alert-info');
+                box.innerText = "Đang gửi yêu cầu đến AI...";
+                box.style.display = "block";
+
+                fetch('/Post/SummarizePost', {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ postId: parseInt(postId) })
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.success) {
+                            box.innerText = "✨ Tóm tắt: " + (res.summary || "Nội dung tóm tắt rỗng.");
+                            box.classList.add('alert-info');
+                        } else {
+                            box.innerText = res.summary ? `❌ Lỗi API: ${res.summary}` : "❌ Lỗi tóm tắt từ máy chủ.";
+                            box.classList.remove('alert-info');
+                            box.classList.add('alert-danger');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        box.innerText = "❌ Lỗi mạng: Không thể kết nối API tóm tắt!";
+                        box.classList.remove('alert-info');
+                        box.classList.add('alert-danger');
+                    })
+                    .finally(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    });
+            });
+        });
+
+        document.addEventListener("click", function (e) {
+            const btn = e.target.closest(".btn-like");
+            if (!btn) return;
+
+            const postId = btn.dataset.postId;
+
+            fetch(`/Post/Like/${postId}`, { method: "POST" })
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById(`like-count-${postId}`).innerText = data.likeCount;
+                    const icon = document.getElementById(`like-icon-${postId}`);
+                    const text = document.getElementById(`like-text-${postId}`);
+
+                    if (data.liked) {
+                        icon.className = "fas fa-thumbs-up text-primary";
+                        text.innerText = "Bỏ thích";
+                        btn.classList.add("active");
+                    } else {
+                        icon.className = "far fa-thumbs-up";
+                        text.innerText = "Thích";
+                        btn.classList.remove("active");
+                    }
+                })
+                .catch(err => console.error("Like error:", err));
+        });
+
+    </script>
+}

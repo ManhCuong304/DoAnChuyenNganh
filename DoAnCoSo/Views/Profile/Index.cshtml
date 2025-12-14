@@ -1,0 +1,444 @@
+﻿@model DoAnCoSo.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Lấy dữ liệu từ Controller
+    var userPosts = ViewBag.UserPosts as List<DoAnCoSo.Models.Post>;
+    var postCount = userPosts?.Count ?? 0;
+    var followerCount = ViewBag.Follower ?? 0;
+    var followingCount = ViewBag.Following ?? 0;
+}
+
+<style>
+    :root {
+        --primary-color: #4e73df;
+        --secondary-color: #858796;
+        --light-bg: #f8f9fc;
+        --card-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+    body { background-color: var(--light-bg); font-family: 'Nunito', sans-serif; }
+
+    /* --- PROFILE HEADER --- */
+    .profile-header-card {
+        border: none; border-radius: 15px; overflow: hidden;
+        box-shadow: var(--card-shadow); background: white; margin-bottom: 2rem;
+    }
+
+    .profile-cover {
+        height: 250px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+    }
+
+    .profile-avatar-container {
+        position: relative; margin-top: -100px; text-align: center; margin-bottom: 1rem;
+    }
+
+    .profile-avatar {
+        width: 160px; height: 160px; border-radius: 50%;
+        border: 5px solid white; object-fit: cover;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: white;
+    }
+
+    .profile-name { font-size: 2rem; font-weight: 800; color: #2e384d; margin-bottom: 0.2rem; }
+    .profile-role { color: var(--secondary-color); font-size: 1.1rem; font-weight: 500; }
+
+    /* --- STATS BOX --- */
+    .stats-container {
+        display: flex; justify-content: center; gap: 3rem;
+        padding: 1.5rem 0; border-top: 1px solid #eaecf4; margin-top: 1.5rem;
+    }
+    .stat-item { text-align: center; cursor: pointer; transition: transform 0.2s; }
+    .stat-item:hover { transform: translateY(-3px); }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: #4e73df; display: block; }
+    .stat-label { font-size: 0.85rem; color: #858796; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* --- INFO CARDS --- */
+    .info-card {
+        border: none; border-radius: 15px; box-shadow: var(--card-shadow);
+        height: 100%; background: white; transition: transform 0.2s;
+    }
+    .info-card:hover { transform: translateY(-5px); }
+
+    .card-header-custom {
+        background: transparent; border-bottom: 1px solid #eaecf4;
+        padding: 1.5rem; font-weight: 700; color: #4e73df; display: flex; align-items: center;
+    }
+    .card-header-custom i { margin-right: 10px; font-size: 1.2rem; }
+
+    .info-row {
+        padding: 1rem 1.5rem; border-bottom: 1px solid #f8f9fc;
+        display: flex; align-items: center;
+    }
+    .info-row:last-child { border-bottom: none; }
+
+    .info-icon {
+        width: 40px; height: 40px; background: #f0f4ff; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        color: #4e73df; margin-right: 15px;
+    }
+
+    .btn-edit-float {
+        position: absolute; top: 20px; right: 20px;
+        background: rgba(255,255,255,0.2); color: white;
+        border: 1px solid rgba(255,255,255,0.4); padding: 8px 20px;
+        border-radius: 30px; backdrop-filter: blur(5px);
+        transition: all 0.3s; text-decoration: none; z-index: 10;
+    }
+    .btn-edit-float:hover { background: white; color: #4e73df; }
+
+    /* --- CSS POST LIST --- */
+    .post-card {
+        border: none; border-radius: 16px; background: #fff;
+        box-shadow: var(--card-shadow); margin-bottom: 20px;
+        overflow: hidden; display: flex; flex-direction: column; height: 100%;
+        transition: transform 0.3s;
+    }
+    .post-card:hover { transform: translateY(-5px); }
+    .post-img-top { width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid #f0f0f0; }
+    .post-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+    .post-date { font-size: 0.8rem; color: #999; font-weight: 500; text-transform: uppercase; margin-bottom: 10px; }
+    .post-text { font-size: 0.95rem; color: #444; line-height: 1.6; margin-bottom: 10px; white-space: pre-line; }
+    .btn-see-more { font-size: 0.9rem; font-weight: 600; color: #0d6efd; cursor: pointer; margin-top: 5px; }
+    .btn-see-more:hover { text-decoration: underline; }
+    .post-footer { padding: 12px 20px; background-color: #fcfcfc; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; color: #666; }
+    .no-image-header { height: 6px; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); width: 100%; }
+</style>
+
+<div class="container py-4">
+
+    <div class="profile-header-card">
+        <div class="profile-cover">
+            <button class="btn btn-edit-float" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <i class="bi bi-pencil-fill me-2"></i>Chỉnh sửa hồ sơ
+            </button>
+        </div>
+
+        <div class="profile-body">
+            <div class="profile-avatar-container">
+                <img src="@Url.Content(Model.Image ?? "/images/default-avatar.png")" alt="Avatar" class="profile-avatar">
+            </div>
+
+            <div class="text-center px-4">
+                <h1 class="profile-name">@Model.UserName</h1>
+                <p class="profile-role">
+                    @(Model.FullName ?? "Thành viên mới")
+                    @if (Model.BirthDate != null)
+                    {
+                        <span> • @Model.BirthDate?.ToString("yyyy")</span>
+                    }
+                </p>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Describe))
+                {
+                    <div class="text-muted mx-auto mt-3" style="max-width: 600px;">
+                        @{
+                            var bio = Model.Describe;
+                            var bioLimit = 150;
+                            bool isBioLong = bio.Length > bioLimit;
+                        }
+
+                        @if (isBioLong)
+                        {
+                            <span id="short-bio" style="font-style: italic;">"@bio.Substring(0, bioLimit)..."</span>
+                            <span id="full-bio" style="display: none; font-style: italic;">"@bio"</span>
+                            <div class="mt-1">
+                                <span class="text-primary fw-bold" style="cursor: pointer; font-size: 0.85rem;" onclick="toggleBio(this)">Xem thêm</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <span style="font-style: italic;">"@bio"</span>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-value">@postCount</span>
+                    <span class="stat-label">Bài viết</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">@followingCount</span>
+                    <span class="stat-label">Đang theo dõi</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">@followerCount</span>
+                    <span class="stat-label">Người theo dõi</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="info-card mb-4">
+                <div class="card-header-custom">
+                    <i class="bi bi-person-lines-fill"></i> Thông tin liên hệ
+                </div>
+                <div class="card-body p-0">
+                    <div class="info-row">
+                        <div class="info-icon"><i class="bi bi-envelope-at"></i></div>
+                        <div>
+                            <small class="text-muted d-block">Email</small>
+                            <span class="fw-bold text-dark">@Model.Email</span>
+                        </div>
+                    </div>
+
+                    @if (Model.BirthDate != null)
+                    {
+                        <div class="info-row">
+                            <div class="info-icon"><i class="bi bi-cake2"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Ngày sinh</small>
+                                <span class="fw-bold text-dark">@Model.BirthDate?.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="info-row">
+                        <div class="info-icon"><i class="bi bi-geo-alt"></i></div>
+                        <div>
+                            <small class="text-muted d-block">Địa chỉ</small>
+                            <span class="fw-bold text-dark">Việt Nam</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-header-custom">
+                    <i class="bi bi-mortarboard"></i> Học vấn & Công việc
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrWhiteSpace(Model.Description) || !string.IsNullOrWhiteSpace(Model.Major))
+                    {
+                        <div class="d-flex mb-4">
+                            <div class="flex-shrink-0">
+                                <div class="avatar-sm rounded bg-light p-2 text-primary">
+                                    <i class="bi bi-book" style="font-size: 24px;"></i>
+                                </div>
+                            </div>
+                            <div class="ms-3">
+                                <h5 class="mb-1 fw-bold">Trường / Khoa</h5>
+                                <p class="text-muted mb-0">@(Model.Description ?? "Chưa cập nhật")</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <div class="avatar-sm rounded bg-light p-2 text-success">
+                                    <i class="bi bi-stars" style="font-size: 24px;"></i>
+                                </div>
+                            </div>
+                            <div class="ms-3">
+                                <h5 class="mb-1 fw-bold">Chuyên ngành</h5>
+                                <p class="text-muted mb-0">@(Model.Major ?? "Chưa cập nhật")</p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-clipboard-x display-4"></i>
+                            <p class="mt-3">Chưa có thông tin học vấn.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <h5 class="fw-bold mb-3 text-secondary"><i class="bi bi-grid-3x3-gap-fill me-2"></i>Bài viết gần đây</h5>
+            
+            @if (userPosts != null && userPosts.Any())
+            {
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var post in userPosts)
+                    {
+                        <div class="col">
+                            <div class="post-card h-100">
+                                @if (!string.IsNullOrEmpty(post.ImagePath)) {
+                                    <a href="@Url.Action("Detail", "Post", new { id = post.Id })">
+                                        <img src="@post.ImagePath" class="post-img-top" alt="Post Image">
+                                    </a>
+                                } else {
+                                    <div class="no-image-header"></div>
+                                }
+
+                                <div class="post-body">
+                                    <span class="post-date">@post.CreatedAt.ToString("d 'thg' M, yyyy")</span>
+
+                                    <div class="post-text">
+                                        @{
+                                            var content = post.Content ?? "";
+                                            var limit = 150; // Giới hạn ký tự
+                                            bool isLong = content.Length > limit;
+                                        }
+
+                                        @if (isLong)
+                                        {
+                                            <span id="short-content-@post.Id">
+                                                @content.Substring(0, limit)...
+                                            </span>
+                                            <span id="full-content-@post.Id" style="display: none;">
+                                                @content
+                                            </span>
+                                            <br>
+                                            <span class="btn-see-more" onclick="toggleSeeMore('@post.Id', this)">Xem thêm</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@content</span>
+                                            if(string.IsNullOrEmpty(content)){ <em class="text-muted opacity-50">Không có nội dung.</em> }
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="post-footer">
+                                    <div><i class="bi bi-heart me-1"></i> Like</div>
+                                    <a href="@Url.Action("Detail", "Post", new { id = post.Id })" class="text-decoration-none small text-muted">Chi tiết <i class="bi bi-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="card border-0 shadow-sm p-5 text-center">
+                    <div class="mb-3 text-muted display-4 opacity-25">
+                        <i class="bi bi-journal-album"></i>
+                    </div>
+                    <h5 class="fw-bold text-muted">Chưa có bài viết nào</h5>
+                    <p class="text-muted">Hãy chia sẻ khoảnh khắc đầu tiên của bạn!</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <form id="editProfileForm" method="post" asp-controller="Profile" asp-action="EditProfile" enctype="multipart/form-data">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Cập nhật hồ sơ</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Username</label>
+                            <input type="text" class="form-control" name="Nickname" value="@Model.UserName">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Họ tên</label>
+                            <input type="text" class="form-control" name="FullName" value="@Model.FullName">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Ảnh đại diện</label>
+                            <input type="file" class="form-control" name="Avatar" accept="image/*">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngày sinh</label>
+                            <input type="date" class="form-control" name="BirthDate" value="@(Model.BirthDate?.ToString("yyyy-MM-dd"))">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="text" class="form-control bg-light" value="@Model.Email" disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngành học</label>
+                            <textarea class="form-control" id="description" name="Description" rows="3">@Model.Description</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Chuyên ngành</label>
+                            <input type="text" class="form-control" id="major" name="Major" value="@Model.Major" disabled>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="toggleDescribe">
+                                <label class="form-check-label" for="toggleDescribe">Thêm lời giới thiệu</label>
+                            </div>
+                            <div id="describeContainer" class="mt-2" style="display:none;">
+                                <textarea class="form-control" id="describe" name="Describe" rows="3" placeholder="Viết gì đó về bạn...">@Model.Describe</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Logic xử lý Form
+    const descriptionInput = document.getElementById("description");
+    const majorInput = document.getElementById("major");
+    const toggleDescribe = document.getElementById("toggleDescribe");
+    const describeContainer = document.getElementById("describeContainer");
+    const describeInput = document.getElementById("describe");
+
+    // Khởi tạo trạng thái ban đầu (nếu các element tồn tại)
+    if (descriptionInput && descriptionInput.value.trim().length > 0) majorInput.disabled = false;
+    
+    if (describeInput && describeInput.value.trim().length > 0) {
+        if(toggleDescribe) toggleDescribe.checked = true;
+        if(describeContainer) describeContainer.style.display = "block";
+    }
+
+    // Sự kiện nhập liệu
+    if(descriptionInput) {
+        descriptionInput.addEventListener("input", function () {
+            majorInput.disabled = this.value.trim().length === 0;
+            if (this.value.trim().length === 0) majorInput.value = "";
+        });
+    }
+
+    if(toggleDescribe) {
+        toggleDescribe.addEventListener("change", function () {
+            describeContainer.style.display = this.checked ? "block" : "none";
+        });
+    }
+
+    // 2. HÀM XỬ LÝ XEM THÊM BÀI VIẾT
+    function toggleSeeMore(postId, btn) {
+        var shortContent = document.getElementById('short-content-' + postId);
+        var fullContent = document.getElementById('full-content-' + postId);
+
+        if (fullContent.style.display === "none") {
+            shortContent.style.display = "none";
+            fullContent.style.display = "inline";
+            btn.innerText = "Thu gọn";
+        } else {
+            shortContent.style.display = "inline";
+            fullContent.style.display = "none";
+            btn.innerText = "Xem thêm";
+        }
+    }
+
+    // 3. HÀM XỬ LÝ XEM THÊM MÔ TẢ (BIO)
+    function toggleBio(btn) {
+        var shortBio = document.getElementById('short-bio');
+        var fullBio = document.getElementById('full-bio');
+
+        if (fullBio.style.display === "none") {
+            shortBio.style.display = "none";
+            fullBio.style.display = "inline";
+            btn.innerText = "Thu gọn";
+        } else {
+            shortBio.style.display = "inline";
+            fullBio.style.display = "none";
+            btn.innerText = "Xem thêm";
+        }
+    }
+</script>

@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head >
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mạng xã hội</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+     @* <link rel="stylesheet" href="~/WebBanStore.styles.css" asp-append-version="true" /> *@
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/base/grid.css">
+    <link rel="stylesheet" href="~/base/base.css">
+    <link rel="stylesheet" href="~/base/blog.css">
+    <link rel="stylesheet" href="~/base/main.css">
+    <link rel="stylesheet" href="~/base/lightbox.min.css">
+    <link rel="stylesheet" href="~/base/group.css">
+    <link rel="stylesheet" href="~/base/MembersDetail.css">
+    <link rel="stylesheet" href="~/base/blog-detail.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" integrity="sha512-tS3S5qG0BlhnQROyJXvNjeEM4UpMXHrQfTGmbQ1gKmelCxlSEBUaxhRBj/EFTzpbP4RVSrpEikbmdJobCvhE3g==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.css" integrity="sha512-OTcub78R3msOCtY3Tc6FzeDJ8N9qvQn1Ph49ou13xgA9VsH9+LRxoFU6EqLhW4+PKRfU+/HReXmSZXHEkpYoOA==" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="d-flex align-items-center">
+        <img src="https://odindesignthemes.com/vikinger-theme/wp-content/uploads/2020/09/cropped-logovikinger.png" width="40" />
+        <span class="ms-2 fw-bold text-primary">BKCH</span>
+    </div>   
+</head>
+<body>
+    <header class="header">
+        <div class="header-actions header-logo">
+            <a asp-controller="Post" asp-action="Index" class="header-logo-link">
+                <img src="https://odindesignthemes.com/vikinger-theme/wp-content/uploads/2020/09/cropped-logovikinger.png" alt="" class="header-logo-img">
+                <div class="header-logo-text">BKCH</div>
+            </a>
+        </div>
+        @* <div class="header-actions">
+            <i class="fas fa-bars header-icon-slide-menu"></i>
+        </div> *@
+         <div class="header-actions">Home</div>
+        <div class="header-actions header-seacher">
+            <div class="header-seach" style="position: relative;">
+                <input name="query" type="text" placeholder="Search here for people" class="header-seach-input">
+                <i class="fas fa-search header-seach-icon"></i>
+                <div id="search-results" class="search-results"></div>
+            </div>
+        </div> 
+
+       
+        <partial name="_LoginPartial"/>
+    </header>
+    @* <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar trái -->
+            <div class="col-md-2">
+                @await Html.PartialAsync("_SidebarNav")
+            </div>
+
+            <!-- Nội dung chính -->
+            <div class="col-md-9">
+                @RenderBody()
+                <footer class="footer">
+                    <div class="container">
+                        <div class="footer-top">
+                            <div class="footer-info">
+                                <div class="footer-info-brand">
+                                    <img src="./images/cropped-logovikinger (1).png" alt="Logo" class="footer-info-brand-image">
+                                    <div class="footer-info-brand-info">
+                                        <p class="footer-info-brand-title">BKCH</p>
+                                        <p class="footer-info-brand-subtitle">BuddyPress Social Community</p>
+                                    </div>
+                                </div>
+                                <p class="footer-info-text">
+                                    BKCH Social Community was created in 2020, designed to be a new and exciting way to bring
+                                    people together!
+                                </p>
+                                <div class="social-items">
+                                    <a href="#" class="social-item facebook">
+                                        <i class="fab fa-facebook-square"></i>
+                                    </a>
+                                    <a href="#" class="social-item twitter">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                    <a href="#" class="social-item instagram">
+                                        <i class="fab fa-instagram"></i>
+                                    </a>
+                                    <a href="#" class="social-item youtube">
+                                        <i class="fab fa-youtube"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div> *@
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px 0;
+            text-align: center;
+        }
+      
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 8px;
+            padding: 8px 0;
+            z-index: 999;
+            display: none; /* Ẩn mặc định */
+        }
+
+
+        .search-item {
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+            .search-item img {
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                object-fit: cover;
+                border: 2px solid #e0e0e0;
+            }
+
+            .search-item span {
+                font-weight: 500;
+                color: #333;
+                font-size: 16px;
+            }
+
+
+            .search-item:hover {
+                background-color: #f5f5f5;
+            }
+    
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/is-in-viewport/3.0.4/isInViewport.min.js" integrity="sha512-eAT5Hvi9/Yx33YvSUPOpAYEA3HnUt5oKCSyPGRQwNgqD7K/90JRpFnkaL1M6ROZtLkckQKJ4WYh9cS7Urr4YjA==" crossorigin="anonymous"></script>
+    <script src="./js/lightbox-plus-jquery.min.js"></script>
+    <script src="./js/hightlight.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" integrity="sha512-bPs7Ae6pVvhOSiIcyUClR7/q2OAsRiovw4vAkX+zJbw3ShAeeqezq50RIIcIURq7Oa20rW2n2q+fyXBNcU9lrw==" crossorigin="anonymous"></script>
+    <script src="./js/main.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
+
+<script>
+    (() => {
+        // debounce helper
+        function debounce(fn, wait) {
+            let t;
+            return (...args) => {
+                clearTimeout(t);
+                t = setTimeout(() => fn(...args), wait);
+            };
+        }
+
+        async function getSearchUser(query) {
+            const resultContainer = document.getElementById('search-results');
+            if (!resultContainer) {
+                console.error('[Search] Không tìm thấy #search-results');
+                return;
+            }
+
+            try {
+                // debug: show that we're calling
+                console.log('[Search] gọi: /Profile/SearchProfile?query=', query);
+
+                const resp = await fetch(`/Profile/SearchProfile?query=${encodeURIComponent(query)}`, {
+                    method: 'GET',
+                    credentials: 'same-origin' // gửi cookie nếu cần (đăng nhập)
+                });
+
+                console.log('[Search] status', resp.status);
+
+                // nếu bị redirect (login page) hoặc content-type khác:
+                const ct = resp.headers.get('content-type') || '';
+                console.log('[Search] content-type', ct);
+
+                if (!resp.ok) {
+                    const txt = await resp.text();
+                    console.error('[Search] Response not OK:', resp.status, txt.slice(0, 500));
+                    resultContainer.innerHTML = '<div class="search-item"><span>Không thể tìm (server error).</span></div>';
+                    resultContainer.style.display = 'block';
+                    return;
+                }
+
+                if (!ct.includes('application/json')) {
+                    // server trả về HTML (thường là trang login hoặc lỗi)
+                    const text = await resp.text();
+                    console.error('[Search] Resp không phải JSON. Có thể bị redirect tới login hoặc lỗi HTML:', text.slice(0, 500));
+                    resultContainer.innerHTML = '<div class="search-item"><span>Không thể tìm (kết quả không phải JSON).</span></div>';
+                    resultContainer.style.display = 'block';
+                    return;
+                }
+
+                const data = await resp.json();
+
+                resultContainer.innerHTML = '';
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    resultContainer.innerHTML = '<div class="search-item"><span>Không tìm thấy kết quả</span></div>';
+                    resultContainer.style.display = 'block';
+                    return;
+                }
+
+                data.forEach(user => {
+                    const img = user.image || '/images/default-avatar.png';
+                    resultContainer.innerHTML += `
+              <a class="search-item" href="/Profile/ProfileDetail/${user.id}">
+                <img src="${img}" alt="Avatar" />
+                <span>${user.fullName || user.userName || 'No name'}</span>
+              </a>`;
+                });
+
+                resultContainer.style.display = 'block';
+            } catch (err) {
+                console.error('[Search] Lỗi fetch:', err);
+                const resultContainer = document.getElementById('search-results');
+                if (resultContainer) {
+                    resultContainer.innerHTML = '<div class="search-item"><span>Lỗi mạng hoặc server</span></div>';
+                    resultContainer.style.display = 'block';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.querySelector('.header-seach-input');
+            const resultContainer = document.getElementById('search-results');
+
+            if (!searchInput) {
+                console.error('[Search] Không tìm thấy ô input .header-seach-input');
+                return;
+            }
+            if (!resultContainer) {
+                console.error('[Search] Không tìm thấy #search-results');
+                return;
+            }
+
+            const debounced = debounce(e => {
+                const q = e.target.value.trim();
+                if (q.length > 0) getSearchUser(q);
+                else {
+                    resultContainer.innerHTML = '';
+                    resultContainer.style.display = 'none';
+                }
+            }, 300);
+
+            searchInput.addEventListener('input', debounced);
+        });
+    })();
+</script>
